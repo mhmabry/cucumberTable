@@ -1,0 +1,98 @@
+#!/usr/bin/python3
+
+import argparse
+import re
+import sys
+
+parser = argparse.ArgumentParser(description="Take a gherkin file with multiline templates in, and output a cucumber compliant file with single line tables.  Output file will be save with '-sline' appended to the name before the extension")
+parser.add_argument('--debug', '-d', action='store_true',
+                    help="Print debugging info")
+parser.add_argument('infile', help='Name of input gherkin file')
+args = parser.parse_args()
+
+(ofMain, extension) = args.infile.split('.')
+#print(f'{ofMain}=={extension}')
+ofMain = ofMain 
+outfile = ofMain + '-sline.' + extension
+
+##
+## Regular expresions
+##
+rowSep = re.compile(r'^\+-')
+tblRow = re.compile(r'^\|')
+
+## Column Count
+def colCount(x):
+    return len(re.findall("\+", x)) - 1
+
+## Extract row content
+def rowContent(l, c):
+    rawRE = r'\|([^\|]+)' * c
+    rawRE = rawRE + '|'
+    if args.debug: print(rawRE) 
+    if args.debug: print(l)
+    contentSearch = re.compile(rawRE)
+    m = contentSearch.match(l)
+    rcr = m.groups()
+    rc = [rcr[i].strip() for i in range(0, len(rcr))]
+    if args.debug: print(rc)
+    return rc
+
+# open file or exit with error
+def openf(f, access):
+    try:
+        x = open(f, access)
+        return x
+    except OSError:
+        print("Could not open file", f)
+        sys.exit()
+
+# convert a list of row content into a single line table format
+def fmtSingleLine(rc):
+    s = '|'.join(rc)
+    ss = '|' + s + '|\n'
+    return ss
+
+###
+### (Main) - Loop through input file
+###
+of = openf(outfile,"w")
+inf = openf(args.infile, "r")
+tblMode = False                 # state var - are we parsing a table or not
+sepLastLine = False
+cols = 0
+rc = []
+for line in inf:
+    if rowSep.search(line):     # this line is a row separator
+        if tblMode:             # row separator within table (not top line)
+            sepLastLine = True
+            longLine = fmtSingleLine(rc)
+            of.write(longLine)
+        else:                   # starting a new table (is top line)
+            tblMode = True
+            sepLastLine = True
+            cols = colCount(line)
+    elif tblRow.search(line):   # a row content line. 
+        if not tblMode:         # Since this is not a multiline table,
+                                # this must be a single-line table, so
+                                # we will just print it as-is
+            of.write(line)
+        elif sepLastLine:         # first line of valid row content
+            rc = rowContent(line, cols)
+            sepLastLine = False
+        else:                   # additional line of content for same row
+            addRC = rowContent(line, cols)
+            for i in range(cols):
+                rc[i] = rc[i] + addRC[i]
+    else:                       # not in a table
+        of.write(line)
+        tblMode = False
+
+# Finish up
+inf.close()
+of.close()
+print(f'Feature file {outfile} created')
+
+
+
+
