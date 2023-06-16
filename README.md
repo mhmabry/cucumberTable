@@ -20,7 +20,7 @@ human-readable, which is aligned with the overall goal of Gherkin.
 
 
 I've used multiline tables in my text editor (Emacs) and its format is
-similar to the Gherkin tables, but will the addition of row
+similar to the Gherkin tables, but with the addition of row
 separators.  Here is an example format that I use and serves as the
 input format support by this table converter program.
 
