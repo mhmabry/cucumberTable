@@ -8,6 +8,8 @@ parser = argparse.ArgumentParser(description="Take a gherkin file with multiline
 parser.add_argument('--debug', '-d', action='store_true',
                     help="Print debugging info")
 parser.add_argument('infile', help='Name of input gherkin file')
+parser.add_argument('--indent', '-i', 
+                    help="Specify the number of spaces to indent the table.  Default=2")
 args = parser.parse_args()
 
 (ofMain, extension) = args.infile.split('.')
@@ -15,11 +17,15 @@ args = parser.parse_args()
 ofMain = ofMain 
 outfile = ofMain + '-sline.' + extension
 
+INDENTSPACES = 2
+if args.indent:
+    INDENTSPACES = args.indent
+
 ##
 ## Regular expresions
 ##
-rowSep = re.compile(r'^\+-')
-tblRow = re.compile(r'^\|')
+rowSep = re.compile(r'^\s*\+-')
+tblRow = re.compile(r'^\s*\|')
 
 ## Column Count
 def colCount(x):
@@ -49,8 +55,9 @@ def openf(f, access):
 
 # convert a list of row content into a single line table format
 def fmtSingleLine(rc):
+    indentSpc = " " * int(INDENTSPACES)
     s = '|'.join(rc)
-    ss = '|' + s + '|\n'
+    ss = indentSpc + '|' + s + '|\n'
     return ss
 
 ###
