@@ -63,7 +63,7 @@ will look like:
 You may need to make the program (cucTbl) executable.
 You may need to edit the top line to be the path of your python.
 
-Alternatively you can call it with 'python cucTbl <<filename>'
+Alternatively you can call it with 'python cucTbl \<filename\>'
 
 ## <x-color>Use</x-color>
 
