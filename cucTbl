@@ -34,7 +34,7 @@ def colCount(x):
 ## Extract row content
 def rowContent(l, c):
     rawRE = r'\|([^\|]+)' * c
-    rawRE = rawRE + '|'
+    rawRE = '\s*' + rawRE + '|'
     if args.debug: print(rawRE) 
     if args.debug: print(l)
     contentSearch = re.compile(rawRE)
